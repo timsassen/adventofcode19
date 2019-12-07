@@ -1,6 +1,6 @@
 <?php
 
-include_once 'vendor/autoload.php';
+include_once '../vendor/autoload.php';
 ini_set('xdebug.max_nesting_level', 500);
 
 $input = file_get_contents(__DIR__ . '/input.txt');

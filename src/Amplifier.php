@@ -11,12 +11,7 @@ class Amplifier
     /**
      * @var int|null
      */
-    protected $input = null;
-
-    /**
-     * @var null
-     */
-    protected $phase = null;
+    protected $inputs = null;
 
     /**
      * @var null
@@ -35,12 +30,11 @@ class Amplifier
      * @param $phase
      * @param int $input
      */
-    public function __construct($name, $instructions, $phase, $input = 0)
+    public function __construct($name, $instructions, $inputs = [])
     {
-        $this->phase = $phase;
-        $this->input = $input;
-        $this->instructions = $instructions;
         $this->name = $name;
+        $this->inputs = $inputs;
+        $this->instructions = $instructions;
     }
 
     /**
@@ -48,17 +42,8 @@ class Amplifier
      */
     public function output()
     {
-        $optCode = new OptCode($this->instructions, $this->phase, $this->name === 'C');
-        $optCode->run();
-        var_dump($this->name . "check1");
-
-        $optCode->setInput($this->input);
-        if (is_null($this->output)) {
-            var_dump($this->input);
-            var_dump($this->name . "check2");
-            $this->output = $optCode->run();
-        }
-        return $this->output;
+        $optCode = new OptCode($this->instructions, $this->inputs);
+        return $optCode->run();
     }
 
 }

@@ -7,6 +7,7 @@ $code = array_map(function ($string) {
     return (int)$string;
 }, $code);
 
-$amplifierArray = new \AOC\AmplifierArray($code);
-$maxThrust = $amplifierArray->getMaxOutput();
-var_dump($maxThrust);
+$feedback = new \AOC\AmplifierFeedbackArray($code);
+$thrust = $feedback->getMaxOutput();
+var_dump($thrust);
+exit;

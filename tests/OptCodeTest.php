@@ -167,4 +167,125 @@ TEST;
         $output = $opCode->run();
         $this->assertEquals(9265694, $output);
     }
+//
+//    public function testday9quine()
+//    {
+//        $code = <<<TEST
+//109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99
+//TEST;
+//        $code = explode(',', $code);
+//        $code = array_map(function ($string) {
+//            return (int)$string;
+//        }, $code);
+//
+//        $opCode = new \AOC\OptCode($code);
+//        try {
+//            $output = $opCode->run();
+//        } catch (\AOC\HaltException $e) {
+//            $output = $e->getLastOutput();
+//        }
+//
+//        var_dump($output);
+//    }
+
+    public function testday9largememoryaddition()
+    {
+        $code = <<<TEST
+1101,1,2,15,4,15,99
+TEST;
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code);
+        try {
+            $output = $opCode->run();
+        } catch (\AOC\HaltException $e) {
+            $output = $e->getLastOutput();
+        }
+
+        $this->assertEquals(16, count($opCode->getCode()));
+        $this->assertEquals(3, $output);
+    }
+
+    public function testday9largememorymulti()
+    {
+        $code = <<<TEST
+1102,1,2,199,4,199,99
+TEST;
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code);
+        try {
+            $output = $opCode->run();
+        } catch (\AOC\HaltException $e) {
+            $output = $e->getLastOutput();
+        }
+
+        $this->assertEquals(200, count($opCode->getCode()));
+        $this->assertEquals(2, $output);
+    }
+
+    public function testday9largememorymulti2()
+    {
+        $code = <<<TEST
+1002,199,2,500,4,500,99
+TEST;
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code);
+        try {
+            $output = $opCode->run();
+        } catch (\AOC\HaltException $e) {
+            $output = $e->getLastOutput();
+        }
+
+        $this->assertEquals(0, $output);
+        $this->assertEquals(501, count($opCode->getCode()));
+    }
+
+    public function testday9example2()
+    {
+        $code = <<<TEST
+1102,34915192,34915192,7,4,7,99,0
+TEST;
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code);
+        try {
+            $output = $opCode->run();
+        } catch (\AOC\HaltException $e) {
+            $output = $e->getLastOutput();
+        }
+        $this->assertEquals(1219070632396864, $output);
+    }
+
+    public function testday9example3()
+    {
+        $code = <<<TEST
+104,1125899906842624,99
+TEST;
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code);
+        try {
+            $output = $opCode->run();
+        } catch (\AOC\HaltException $e) {
+            $output = $e->getLastOutput();
+        }
+        $this->assertEquals(1125899906842624, $output);
+    }
 }

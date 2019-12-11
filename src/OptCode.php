@@ -9,7 +9,7 @@ namespace AOC;
 class OptCode
 {
     /**
-     * @var \ArrayIterator
+     * @var array
      */
     protected $code;
     /**
@@ -23,6 +23,10 @@ class OptCode
 
     protected $index = 0;
 
+    protected $relativeBase = 0;
+
+    protected $output = [];
+
     /**
      * OptCode constructor.
      * @param $code
@@ -31,7 +35,7 @@ class OptCode
      */
     public function __construct($code, $input = [], $verbose = false)
     {
-        $this->code = new \ArrayIterator($code);
+        $this->code = $code;
         $this->input = $input;
         $this->verbose = $verbose;
     }
@@ -83,6 +87,47 @@ class OptCode
         ];
     }
 
+    public function write($parameter, $value, $mode)
+    {
+        switch ($mode) {
+            case 0: $address = $parameter; break;
+            case 2: $address = $this->relativeBase += $parameter; break;
+        }
+
+        if (!isset($this->code[$address])) {
+            $this->code = array_pad($this->code, $address + 1, 0);
+        }
+
+        $this->code[$address] = $value;
+    }
+
+    public function read($parameter, $mode)
+    {
+        if ($mode == 1) {
+            return $parameter;
+        }
+        switch ($mode) {
+            case 0: $address = $parameter; break;
+            case 2: $address = $this->relativeBase += $parameter; break;
+        }
+
+
+        if (!isset($this->code[$address])) {
+            if ($this->verbose) {
+//                var_dump($this->code);
+            }
+            $this->code = array_pad($this->code, $address + 1, 0);
+            if ($this->verbose) {
+//                var_dump($address);
+//                var_dump($this->code);
+//                var_dump(count($this->code));
+//                exit;
+            }
+        }
+
+        return $this->code[$address];
+    }
+
     /**
      * @param $code
      * @param $instructionType
@@ -94,21 +139,36 @@ class OptCode
      */
     function compute($code, $instructionType, $parameter1, $parameter2 = null, $parameter3 = null, $modes = [0, 0, 0])
     {
-
         if ($instructionType == 1) {
-            $parameter1 = ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1;
-            $parameter2 = ($modes[1] === 0) ? $this->code[$parameter2] : $parameter2;
             if ($this->verbose) {
-                var_dump(sprintf("Add %s to %s and set to position %s", $parameter1, $parameter2, $parameter3));
+                var_dump(sprintf(
+                    "Add %s to %s and set to position %s",
+                    $this->read($parameter1, $modes[0]),
+                    $this->read($parameter2, $modes[1]),
+                    $parameter3
+                ));
             }
-            $this->code[$parameter3] = $parameter1 + $parameter2;
+
+            $this->write(
+                $parameter3,
+                $this->read($parameter1, $modes[0]) + $this->read($parameter2, $modes[1]),
+                $modes[2]
+            );
         } elseif ($instructionType == 2) {
-            $parameter1 = ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1;
-            $parameter2 = ($modes[1] === 0) ? $this->code[$parameter2] : $parameter2;
             if ($this->verbose) {
-                var_dump(sprintf("Multiply %s with %s and set to position %s", $parameter1, $parameter2, $parameter3));
+                var_dump(sprintf(
+                    "Multiply %s with %s and set to position %s",
+                    $this->read($parameter1, $modes[0]),
+                    $this->read($parameter2, $modes[1]),
+                    $parameter3
+                ));
             }
-            $this->code[$parameter3] = $parameter1 * $parameter2;
+
+            $this->write(
+                $parameter3,
+                $this->read($parameter1, $modes[0]) * $this->read($parameter2, $modes[1]),
+                $modes[2]
+            );
         } elseif ($instructionType == 3) {
             $insertValue = array_shift($this->input);
             if ($this->verbose) {
@@ -121,8 +181,16 @@ class OptCode
             }
             return ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1;
         } elseif ($instructionType == 5) {
-            $parameter1 = ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1;
-            $parameter2 = ($modes[1] === 0) ? $this->code[$parameter2] : $parameter2;
+            if ($modes[0] === 0) {
+                $parameter1 = $this->code[$parameter1];
+            } elseif ($modes[0] === 2) {
+                $parameter1 = $this->code[$this->relativeBase += $parameter1];
+            }
+            if ($modes[1] === 0) {
+                $parameter2 = $this->code[$parameter2];
+            } elseif ($modes[1] === 2) {
+                $parameter2 = $this->code[$this->relativeBase += $parameter2];
+            }
             if ($parameter1 !== 0) {
                 if ($this->verbose) {
                     var_dump(sprintf("5: New pointer is %s", $parameter2));
@@ -131,8 +199,16 @@ class OptCode
             }
             return null;
         } elseif ($instructionType == 6) {
-            $parameter1 = ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1;
-            $parameter2 = ($modes[1] === 0) ? $this->code[$parameter2] : $parameter2;
+            if ($modes[0] === 0) {
+                $parameter1 = $this->code[$parameter1];
+            } elseif ($modes[0] === 2) {
+                $parameter1 = $this->code[$this->relativeBase += $parameter1];
+            }
+            if ($modes[1] === 0) {
+                $parameter2 = $this->code[$parameter2];
+            } elseif ($modes[1] === 2) {
+                $parameter2 = $this->code[$this->relativeBase += $parameter2];
+            }
             if ($parameter1 === 0) {
                 if ($this->verbose) {
                     var_dump(sprintf("6: New pointer is %s", $parameter2));
@@ -141,19 +217,42 @@ class OptCode
             }
             return null;
         } elseif ($instructionType == 7) {
-            $parameter1 = ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1;
-            $parameter2 = ($modes[1] === 0) ? $this->code[$parameter2] : $parameter2;
+            if ($modes[0] === 0) {
+                $parameter1 = $this->code[$parameter1];
+            } elseif ($modes[0] === 2) {
+                $parameter1 = $this->code[$this->relativeBase += $parameter1];
+            }
+            if ($modes[1] === 0) {
+                $parameter2 = $this->code[$parameter2];
+            } elseif ($modes[1] === 2) {
+                $parameter2 = $this->code[$this->relativeBase += $parameter2];
+            }
             if ($this->verbose) {
                 var_dump(sprintf("If %s is less than %s, set 1 to position %s", $parameter1, $parameter2, $parameter3));
             }
             $this->code[$parameter3] = $parameter1 < $parameter2 ? 1 : 0;
         } elseif ($instructionType == 8) {
-            $parameter1 = ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1;
-            $parameter2 = ($modes[1] === 0) ? $this->code[$parameter2] : $parameter2;
+            if ($modes[0] === 0) {
+                $parameter1 = $this->code[$parameter1];
+            } elseif ($modes[0] === 2) {
+                $parameter1 = $this->code[$this->relativeBase += $parameter1];
+            }
+            if ($modes[1] === 0) {
+                $parameter2 = $this->code[$parameter2];
+            } elseif ($modes[1] === 2) {
+                $parameter2 = $this->code[$this->relativeBase += $parameter2];
+            }
             if ($this->verbose) {
                 var_dump(sprintf("If %s is equal to %s, set 1 to position %s", $parameter1, $parameter2, $parameter3));
             }
             $this->code[$parameter3] = $parameter1 === $parameter2 ? 1 : 0;
+        } elseif ($instructionType == 9) {
+            if ($modes[0] === 0) {
+                $parameter1 = $this->code[$parameter1];
+            } elseif ($modes[0] === 2) {
+                $parameter1 = $this->code[$this->relativeBase += $parameter1];
+            }
+            $this->relativeBase += $parameter1;
         }
 
 
@@ -161,7 +260,7 @@ class OptCode
     }
 
     /**
-     * @return bool
+     * @return bool|null|array
      * @throws HaltException
      */
     public function run()
@@ -182,7 +281,7 @@ class OptCode
                 $instructionType = (int)key($instruction);
                 $modes = current($instruction);
                 $parameter1 = (int)$this->code[$i + 1];
-                $parameter2 = (in_array($instructionType, [1, 2, 5, 6, 7, 8])) ? (int)$this->code[$i + 2] : null;
+                $parameter2 = (in_array($instructionType, [1, 2, 5, 6, 7, 8, 9])) ? (int)$this->code[$i + 2] : null;
                 $parameter3 = (in_array($instructionType, [1, 2, 7, 8])) ? (int)$this->code[$i + 3] : null;
 
                 try {
@@ -199,7 +298,7 @@ class OptCode
             }
 
 
-            if (in_array($instructionType, [3, 4, 99])) {
+            if (in_array($instructionType, [3, 4, 99, 9])) {
                 $i++;
             } elseif (in_array($instructionType, [5, 6])) {
                 $newPointer = $currentOutput;

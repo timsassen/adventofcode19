@@ -6,10 +6,6 @@ namespace AOC;
  * Class OptCode
  * @package AOC
  */
-/**
- * Class OptCode
- * @package AOC
- */
 class OptCode
 {
     /**
@@ -103,12 +99,20 @@ class OptCode
      * @param $parameter
      * @param $value
      * @param $mode
+     * @throws \Exception
      */
     public function write($parameter, $value, $mode)
     {
         switch ($mode) {
-            case 0: $address = $parameter; break;
-            case 2: $address = $this->relativeBase += $parameter; break;
+            case 0:
+                $address = $parameter;
+                break;
+            case 1:
+                throw new \Exception('write instruction to literal mode');
+                break;
+            case 2:
+                $address = $this->relativeBase + $parameter;
+                break;
         }
 
         if (!isset($this->code[$address])) {
@@ -129,8 +133,12 @@ class OptCode
             return $parameter;
         }
         switch ($mode) {
-            case 0: $address = $parameter; break;
-            case 2: $address = $this->relativeBase += $parameter; break;
+            case 0:
+                $address = $parameter;
+                break;
+            case 2:
+                $address = $this->relativeBase + $parameter;
+                break;
         }
 
         if (!isset($this->code[$address])) {
@@ -160,12 +168,15 @@ class OptCode
                     $parameter3
                 ));
             }
-
-            $this->write(
-                $parameter3,
-                $this->read($parameter1, $modes[0]) + $this->read($parameter2, $modes[1]),
-                $modes[2]
-            );
+            try {
+                $this->write(
+                    $parameter3,
+                    $this->read($parameter1, $modes[0]) + $this->read($parameter2, $modes[1]),
+                    $modes[2]
+                );
+            } catch (\Exception $e) {
+                var_dump($e->getMessage());
+            }
         } elseif ($instructionType == 2) {
             if ($this->verbose) {
                 var_dump(sprintf(
@@ -176,22 +187,30 @@ class OptCode
                 ));
             }
 
-            $this->write(
-                $parameter3,
-                $this->read($parameter1, $modes[0]) * $this->read($parameter2, $modes[1]),
-                $modes[2]
-            );
+            try {
+                $this->write(
+                    $parameter3,
+                    $this->read($parameter1, $modes[0]) * $this->read($parameter2, $modes[1]),
+                    $modes[2]
+                );
+            } catch (\Exception $e) {
+                var_dump($e->getMessage());
+            }
         } elseif ($instructionType == 3) {
             $insertValue = array_shift($this->input);
             if ($this->verbose) {
                 var_dump(sprintf("Set input %s to position %s", $insertValue, $parameter1));
             }
-            $this->code[$parameter1] = $insertValue;
+            try {
+                $this->write($parameter1, $insertValue, $modes[0]);
+            } catch (\Exception $e) {
+                var_dump($e->getMessage());
+            }
         } elseif ($instructionType == 4) {
             if ($this->verbose) {
-                var_dump(sprintf("Output %s from position %s", ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1, $parameter1));
+                var_dump(sprintf("Output %s from position %s", $this->read($parameter1, $modes[0])));
             }
-            return ($modes[0] === 0) ? $this->code[$parameter1] : $parameter1;
+            return $this->read($parameter1, $modes[0]);
         } elseif ($instructionType == 5) {
             $parameter1 = $this->read($parameter1, $modes[0]);
             $parameter2 = $this->read($parameter2, $modes[1]);
@@ -221,7 +240,11 @@ class OptCode
             if ($this->verbose) {
                 var_dump(sprintf("If %s is less than %s, set 1 to position %s", $parameter1, $parameter2, $parameter3));
             }
-            $this->write($parameter3, ($parameter1 < $parameter2 ? 1 : 0), $modes[2]);
+            try {
+                $this->write($parameter3, ($parameter1 < $parameter2 ? 1 : 0), $modes[2]);
+            } catch (\Exception $e) {
+                var_dump($e->getMessage());
+            }
         } elseif ($instructionType == 8) {
             $parameter1 = $this->read($parameter1, $modes[0]);
             $parameter2 = $this->read($parameter2, $modes[1]);
@@ -229,7 +252,11 @@ class OptCode
             if ($this->verbose) {
                 var_dump(sprintf("If %s is equal to %s, set 1 to position %s", $parameter1, $parameter2, $parameter3));
             }
-            $this->write($parameter3, ($parameter1 === $parameter2 ? 1 : 0), $modes[2]);
+            try {
+                $this->write($parameter3, ($parameter1 === $parameter2 ? 1 : 0), $modes[2]);
+            } catch (\Exception $e) {
+                var_dump($e->getMessage());
+            }
         } elseif ($instructionType == 9) {
             $parameter1 = $this->read($parameter1, $modes[0]);
 
@@ -285,19 +312,13 @@ class OptCode
                 $parameter1 = (int)$this->code[$i + 1];
                 $parameter2 = (in_array($instructionType, [1, 2, 5, 6, 7, 8, 9])) ? (int)$this->code[$i + 2] : null;
                 $parameter3 = (in_array($instructionType, [1, 2, 7, 8])) ? (int)$this->code[$i + 3] : null;
-
-                try {
-                    $currentOutput = $this->compute($this->code, $instructionType, $parameter1, $parameter2, $parameter3, $modes);
-                } catch (\Exception $exception) {
-                    echo $exception->getMessage();
-                }
             } else {
-                try {
-                    $currentOutput = $this->compute($this->code, $instructionType, (int)$this->code[$i + 1], (int)$this->code[$i + 2], (int)$this->code[$i + 3]);
-                } catch (\Exception $exception) {
-                    echo $exception->getMessage();
-                }
+                $parameter1 = (int)$this->code[$i + 1];
+                $parameter2 = (int)$this->code[$i + 2];
+                $parameter3 = (int)$this->code[$i + 3];
+                $modes = [0, 0, 0];
             }
+            $currentOutput = $this->compute($this->code, $instructionType, $parameter1, $parameter2, $parameter3, $modes);
 
 
             if (in_array($instructionType, [3, 4, 99, 9])) {

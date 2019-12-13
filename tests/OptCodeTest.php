@@ -146,26 +146,22 @@ TEST;
         $opCode = new \AOC\OptCode($code, [5]);
         $this->assertEquals(9265694, $opCode->getOutput(0));
     }
-//
-//    public function testday9quine()
-//    {
-//        $code = <<<TEST
-//109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99
-//TEST;
-//        $code = explode(',', $code);
-//        $code = array_map(function ($string) {
-//            return (int)$string;
-//        }, $code);
-//
-//        $opCode = new \AOC\OptCode($code);
-//        try {
-//            $output = $opCode->run();
-//        } catch (\AOC\HaltException $e) {
-//            $output = $e->getLastOutput();
-//        }
-//
-//        var_dump($output);
-//    }
+
+    public function testday9quine()
+    {
+        $code = <<<TEST
+109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99
+TEST;
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code);
+        $output = $opCode->getOutput();
+
+        $this->assertEquals($code, $output);
+    }
 
     public function testday9largememoryaddition()
     {
@@ -210,6 +206,34 @@ TEST;
         $opCode = new \AOC\OptCode($code);
         $this->assertEquals(0, $opCode->getOutput(0));
         $this->assertEquals(501, count($opCode->getCode()));
+    }
+
+    public function testday9a()
+    {
+        $code = file_get_contents(__DIR__ . '/../09/input.txt');
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code, [1]);
+
+        $this->assertEquals(3507134798, $opCode->getOutput(0));
+        $this->assertCount(1, $opCode->getOutput());
+    }
+
+    public function testday9b()
+    {
+        $code = file_get_contents(__DIR__ . '/../09/input.txt');
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code, [2]);
+
+        $this->assertEquals(84513, $opCode->getOutput(0));
+        $this->assertCount(1, $opCode->getOutput());
     }
 
     public function testday9MultipleOutputs()

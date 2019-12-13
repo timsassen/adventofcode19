@@ -7,7 +7,7 @@ $code = array_map(function ($string) {
     return (int)$string;
 }, $code);
 
-$opCode = new \AOC\OptCode($code, [1]);
+$opCode = new \AOC\OptCode($code, [2]);
 $output = $opCode->getOutput();
 var_dump($output);
 exit;

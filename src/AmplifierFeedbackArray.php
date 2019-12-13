@@ -34,16 +34,16 @@ class AmplifierFeedbackArray extends AmplifierArray
 
         $lastOpcodeOutput = null;
 
-        /** @var OptCode $opcode */
+        /** @currentOutput OptCode $opcode */
         foreach ($feedback as $key => $opcode) {
             $input = ($lastOpcodeOutput == null) ? [0] : [$lastOpcodeOutput];
             $opcode->setInput($input);
 
-            try {
-                $lastOpcodeOutput = $opcode->run();
-            } catch (HaltException $e) {
+            $currentOutput = $opcode->getFirstOutput();
+            if (is_null($currentOutput)) {
                 break;
             }
+            $lastOpcodeOutput = $currentOutput;
         }
 
         return $lastOpcodeOutput;

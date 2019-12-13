@@ -48,11 +48,11 @@ class AmplifierArray
 
     public function tryPermutation($permutation)
     {
-        $amplifierA = new \AOC\Amplifier('A', $this->instructions, [$permutation[0], 0]);
-        $amplifierB = new \AOC\Amplifier('B', $this->instructions, [$permutation[1], $amplifierA->output()]);
-        $amplifierC = new \AOC\Amplifier('C', $this->instructions, [$permutation[2], $amplifierB->output()]);
-        $amplifierD = new \AOC\Amplifier('D', $this->instructions, [$permutation[3], $amplifierC->output()]);
-        $amplifierE = new \AOC\Amplifier('E', $this->instructions, [$permutation[4], $amplifierD->output()]);
-        return $amplifierE->output();
+        $amplifierA = new \AOC\OptCode($this->instructions, [$permutation[0], 0]);
+        $amplifierB = new \AOC\OptCode($this->instructions, [$permutation[1], $amplifierA->getOutput(0)]);
+        $amplifierC = new \AOC\OptCode($this->instructions, [$permutation[2], $amplifierB->getOutput(0)]);
+        $amplifierD = new \AOC\OptCode($this->instructions, [$permutation[3], $amplifierC->getOutput(0)]);
+        $amplifierE = new \AOC\OptCode($this->instructions, [$permutation[4], $amplifierD->getOutput(0)]);
+        return $amplifierE->getOutput(0);
     }
 }

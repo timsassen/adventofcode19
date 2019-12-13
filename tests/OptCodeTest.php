@@ -17,13 +17,8 @@ class OptCodeTest extends TestCase
         $code[2] = 2;
 
         $opCode = new \AOC\OptCode($code, []);
-        try {
-            $opCode->run();
-        } catch (\AOC\HaltException $e) {
-            $zeroAddress = $opCode->readAt(0);
-        }
-
-        $this->assertEquals(3562624, $zeroAddress);
+        $opCode->getOutput();
+        $this->assertEquals(3562624, $opCode->readAt(0));
     }
 
     public function testday2()
@@ -40,12 +35,8 @@ class OptCodeTest extends TestCase
                 $code[1] = $i;
                 $code[2] = $j;
                 $opCode = new \AOC\OptCode($code, []);
-                try {
-                    $opCode->run();
-                } catch (\AOC\HaltException $e) {
-                    $output = $opCode->readAt(0);
-                }
-                if ($output == 19690720) {
+                $outputs = $opCode->getOutput();
+                if ($opCode->readAt(0) == 19690720) {
                     $check = 100 * $i + $j;
                     $this->assertEquals(8298, $check);
                 }
@@ -63,14 +54,11 @@ class OptCodeTest extends TestCase
         }, $code);
 
         $opCode = new \AOC\OptCode($code, [1]);
-        try {
-            $output = $opCode->run();
-
-        } catch (\AOC\HaltException $e) {
-            $output = $e->getLastOutput();
+        foreach ($opCode->run() as $output) {
+            if ($output != 0) {
+                $this->assertEquals(7566643, $output);
+            }
         }
-
-        $this->assertEquals(7566643, $output);
     }
 
     public function testday5example1()
@@ -84,7 +72,8 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code, [7]);
-        $belowEight = $opCode->run();
+        $belowEight = $opCode->getOutput(0);
+
         $this->assertEquals(999, $belowEight);
     }
 
@@ -99,8 +88,7 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code, [8]);
-        $eight = $opCode->run();
-        $this->assertEquals(1000, $eight);
+        $this->assertEquals(1000, $opCode->getOutput(0));
     }
 
     public function testday5example3()
@@ -114,8 +102,7 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code, [9]);
-        $eight = $opCode->run();
-        $this->assertEquals(1001, $eight);
+        $this->assertEquals(1001, $opCode->getOutput(0));
     }
 
     public function testday5example4()
@@ -129,13 +116,7 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code, [0]);
-        try {
-            $eight =  $opCode->run();
-            $this->assertEquals(0, $eight);
-        } catch (\AOC\HaltException $e) {
-            $eight = $e->getLastOutput();
-            $this->assertEquals(0, $eight);
-        }
+        $this->assertEquals(0, $opCode->getOutput(0));
     }
 
 
@@ -150,8 +131,7 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code, [123]);
-        $eight = $opCode->run();
-        $this->assertEquals(1, $eight);
+        $this->assertEquals(1, $opCode->getOutput(0));
     }
 
     public function testday5b()
@@ -164,8 +144,7 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code, [5]);
-        $output = $opCode->run();
-        $this->assertEquals(9265694, $output);
+        $this->assertEquals(9265694, $opCode->getOutput(0));
     }
 //
 //    public function testday9quine()
@@ -198,15 +177,9 @@ TEST;
             return (int)$string;
         }, $code);
 
-        $opCode = new \AOC\OptCode($code);
-        try {
-            $output = $opCode->run();
-        } catch (\AOC\HaltException $e) {
-            $output = $e->getLastOutput();
-        }
-
-        $this->assertEquals(16, count($opCode->getCode()));
-        $this->assertEquals(3, $output);
+        $opCode = new \AOC\OptCode($code, []);
+        $this->assertEquals(3, $opCode->getOutput(0));
+        $this->assertCount(16, $opCode->getCode());
     }
 
     public function testday9largememorymulti()
@@ -220,14 +193,8 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code);
-        try {
-            $output = $opCode->run();
-        } catch (\AOC\HaltException $e) {
-            $output = $e->getLastOutput();
-        }
-
+        $this->assertEquals(2, $opCode->getOutput(0));
         $this->assertEquals(200, count($opCode->getCode()));
-        $this->assertEquals(2, $output);
     }
 
     public function testday9largememorymulti2()
@@ -241,14 +208,23 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code);
-        try {
-            $output = $opCode->run();
-        } catch (\AOC\HaltException $e) {
-            $output = $e->getLastOutput();
-        }
-
-        $this->assertEquals(0, $output);
+        $this->assertEquals(0, $opCode->getOutput(0));
         $this->assertEquals(501, count($opCode->getCode()));
+    }
+
+    public function testday9MultipleOutputs()
+    {
+        $code = <<<TEST
+1002,199,2,500,4,500,104,1,99
+TEST;
+        $code = explode(',', $code);
+        $code = array_map(function ($string) {
+            return (int)$string;
+        }, $code);
+
+        $opCode = new \AOC\OptCode($code);
+        $this->assertIsArray($opCode->getOutput());
+        $this->assertEquals(2, count($opCode->getOutput()));
     }
 
     public function testday9example2()
@@ -262,12 +238,7 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code);
-        try {
-            $output = $opCode->run();
-        } catch (\AOC\HaltException $e) {
-            $output = $e->getLastOutput();
-        }
-        $this->assertEquals(1219070632396864, $output);
+        $this->assertEquals(1219070632396864, $opCode->getOutput(0));
     }
 
     public function testday9example3()
@@ -281,11 +252,6 @@ TEST;
         }, $code);
 
         $opCode = new \AOC\OptCode($code);
-        try {
-            $output = $opCode->run();
-        } catch (\AOC\HaltException $e) {
-            $output = $e->getLastOutput();
-        }
-        $this->assertEquals(1125899906842624, $output);
+        $this->assertEquals(1125899906842624, $opCode->getOutput(0));
     }
 }

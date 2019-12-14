@@ -2,24 +2,16 @@
 
 include_once __DIR__ . '/vendor/autoload.php';
 
-$input = <<<ASTROID
-...
-.#.
-...
-ASTROID;
+$asteroids = [
+    [0,0],
+    [1,1],
+    [2,2]
+];
 
-$asteroid = new \AOC\AsteroidField($input);
-$ring = $asteroid->createRing(1, [1,1]);
-
-$input = <<<ASTROID
-.....
-.....
-..#..
-.....
-.....
-ASTROID;
-
-$asteroid = new \AOC\AsteroidField($input);
-$ring = $asteroid->createRing(2, [2,2]);
-
-exit;
+$ring = [
+    [2,2]
+];
+$asteroidsInRing = array_filter($ring, function ($ringElement) use ($asteroids) {
+    return in_array($ringElement, $asteroids);
+});
+var_dump($asteroidsInRing);

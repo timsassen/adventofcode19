@@ -137,8 +137,8 @@ class AsteroidField
                             //if it is, remove it from the list
                             $this->removeFromList($asteroidInRing);
                         } else {
-                            $observableAstroidCount++;
                             //if not count it and calculate new obscure coords
+                            $observableAstroidCount++;
                             $this->obscure($asteroid, $asteroidInRing);
                         }
                     }
@@ -352,7 +352,6 @@ class AsteroidField
 
     public function paint($ring)
     {
-        $range = 20;
         for ($i = 0; $i <= $this->height - 1; $i++) {
             for ($j = 0; $j <= $this->width - 1; $j++) {
                 if (in_array([$j, $i], $ring)) {

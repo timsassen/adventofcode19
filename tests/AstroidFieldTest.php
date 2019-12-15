@@ -44,13 +44,7 @@ ASTEROID;
         $asteroid = new \AOC\AsteroidField($input);
         $ring = $asteroid->createRing(2, [2, 2]);
         $this->assertEquals([
-            //left
-            [0, 2],
-            // up
-            [0, 1],
-            [0, 0],
             //right
-            [1, 0],
             [2, 0],
             [3, 0],
             [4, 0],
@@ -64,8 +58,13 @@ ASTEROID;
             [2, 4],
             [1, 4],
             [0, 4],
-            //up again
+            //up
             [0, 3],
+            [0, 2],
+            [0, 1],
+            [0, 0],
+            //right
+            [1, 0],
 
         ], $ring);
     }
@@ -81,10 +80,6 @@ ASTEROID;
         $asteroid = new \AOC\AsteroidField($input);
         $ring = $asteroid->createRing(1, [1, 1]);
         $this->assertEquals([
-            //left
-            [0, 1],
-            // up
-            [0, 0],
             //right
             [1, 0],
             [2, 0],
@@ -94,6 +89,9 @@ ASTEROID;
             //left
             [1, 2],
             [0, 2],
+            [0, 1],
+            // up
+            [0, 0],
         ], $ring);
     }
 
@@ -129,15 +127,6 @@ ASTEROID;
         $asteroid = new \AOC\AsteroidField($input);
         $ring = $asteroid->createRing(3, [3, 3]);
         $this->assertEquals([
-            //left
-            [0, 3],
-            // up
-            [0, 2],
-            [0, 1],
-            [0, 0],
-            //right
-            [1, 0],
-            [2, 0],
             [3, 0],
             [4, 0],
             [5, 0],
@@ -158,7 +147,15 @@ ASTEROID;
             [0, 6],
             //up again
             [0, 5],
-            [0, 4]
+            [0, 4],
+            [0, 3],
+            // up
+            [0, 2],
+            [0, 1],
+            [0, 0],
+            //right
+            [1, 0],
+            [2, 0]
         ], $ring);
     }
 

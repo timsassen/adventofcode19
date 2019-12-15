@@ -296,21 +296,14 @@ class AsteroidField
 
     public function createRing($distance, $base)
     {
-        $ring = [[$base[0] - $distance, $base[1]]];
+        $ring = [[$base[0], $base[1] - $distance]];
 
-        //up 1 distance
-        $minUp = end($ring)[1] - 1;
-        $maxUp = end($ring)[1] - $distance;
-        for ($i = $minUp; $i >= $maxUp; $i--) {
-            $arr = [end($ring)[0], $i];
-            $ring[] = $arr;
-        }
-
-        //right 2 distance
-        $maxRight = end($ring)[0] + ($distance * 2);
+        //right 1 distance
         $minRight = end($ring)[0] + 1;
+        $maxRight = end($ring)[0] + $distance;
         for ($i = $minRight; $i <= $maxRight; $i++) {
-            $ring[] = [$i, end($ring)[1]];
+            $arr = [$i, end($ring)[1]];
+            $ring[] = $arr;
         }
 
         //down 2 distance
@@ -327,11 +320,18 @@ class AsteroidField
             $ring[] = [$i, end($ring)[1]];
         }
 
-        //up 1 distance
+        //up 2 distances
         $minUp = end($ring)[1] - 1;
-        $maxUp = end($ring)[1] - $distance + 1;
+        $maxUp = end($ring)[1] - ($distance * 2);
         for ($i = $minUp; $i >= $maxUp; $i--) {
             $ring[] = [$base[0] - $distance, $i];
+        }
+
+        //right 1 distance
+        $minRight = end($ring)[0] + 1;
+        $maxRight = end($ring)[0] + $distance - 1;
+        for ($i = $minRight; $i <= $maxRight; $i++) {
+            $ring[] = [$i, end($ring)[1]];
         }
 
         //filter out negatives

@@ -116,6 +116,103 @@ class AsteroidField
         return $this->asteroids;
     }
 
+    public function vaporize()
+    {
+        $asteroids = $this->asteroids;
+        $this->check();
+        $monitoringStation = $this->getOptimalLocationCoords();
+
+        $vaporizedAsteroids = [];
+        $tr = [];
+        $br = [];
+        $bl = [];
+        $tl = [];
+
+        foreach ($asteroids as $asteroid) {
+            if ($asteroid[0] == $monitoringStation[0] && $asteroid[1] == $monitoringStation[1]) {
+                continue;
+            }
+            if ($asteroid[0] >= $monitoringStation[0] && $asteroid[1] < $monitoringStation[1]) {
+                $distance = $monitoringStation[1] - $asteroid[1];
+                $away = $asteroid[0] - $monitoringStation[0];
+                $asteroid[2] = ($away > 0) ? atan($distance/$away) : 2;
+                $asteroid[3] = $distance + $away;
+                $tr[] = $asteroid;
+            } else if ($asteroid[0] > $monitoringStation[0] && $asteroid[1] >= $monitoringStation[1]) {
+                $distance = $asteroid[0] - $monitoringStation[0];
+                $away = $asteroid[1] - $monitoringStation[1];
+                $asteroid[2] = ($away > 0) ? atan($distance/$away) : 2;
+                $asteroid[3] = $distance + $away;
+                $br[] = $asteroid;
+            } else if ($asteroid[0] <= $monitoringStation[0] && $asteroid[1] > $monitoringStation[1]) {
+                $distance = $monitoringStation[0] - $asteroid[0];
+                $away = $asteroid[1] - $monitoringStation[1];
+                $asteroid[2] = ($away > 0) ? atan($distance/$away) : 2;
+                $asteroid[3] = $distance + $away;
+                $bl[] = $asteroid;
+            } else if ($asteroid[0] < $monitoringStation[0] && $asteroid[1] <= $monitoringStation[1]) {
+                $distance = $monitoringStation[1] - $asteroid[1];
+                $away = $monitoringStation[0] - $asteroid[0];
+                $asteroid[2] = ($away > 0) ? atan($distance/$away) : 2;
+                $asteroid[3] = $distance + $away;
+                $tl[] = $asteroid;
+            }
+        }
+
+        $this->sortQuadrant($tr);
+        $this->sortQuadrant($br);
+        $this->sortQuadrant($bl, true);
+        $this->sortQuadrant($tl, true);
+        $quadrants = [$tr, $br, $bl, $tl];
+
+        while (count($vaporizedAsteroids) < count($asteroids) - 1) {
+            foreach ($quadrants as &$quadrant) {
+                $vaporizeQuadrant = $this->vaporizeQuadrant($quadrant, $monitoringStation);
+//                var_dump($vaporizeQuadrant);die;
+
+                if (is_array($vaporizeQuadrant)) {
+                    $vaporizedAsteroids = array_merge($vaporizedAsteroids, array_values($vaporizeQuadrant));
+                }
+            }
+        }
+
+        return $vaporizedAsteroids;
+    }
+
+    public function sortQuadrant(&$asteroids, $flip = false)
+    {
+        usort($asteroids, function ($a, $b) use ($flip) {
+            if ($b[2] == $a[2]) {
+                if ($b[3] == $a[3]) {
+                    return 0;
+                }
+                return $b[3] < $a[3] ? 1 : -1;
+            }
+            $sortDirection = $b[2] < $a[2] ? -1 : 1;
+            return ($flip) ? $sortDirection * -1 : $sortDirection;
+        });
+    }
+
+    public function vaporizeQuadrant(&$asteroids, $monitoringStation)
+    {
+        if (empty($asteroids)) {
+            return false;
+        }
+        $quadrant = [];
+        $obscured = [];
+        foreach ($asteroids as $key => $item) {
+            if (in_array([$item[0], $item[1]], $obscured)) {
+                continue;
+            }
+            $quadrant[] = $item;
+            $obscure = $this->obscure($monitoringStation, $item);
+            $obscured = array_merge($obscured, $obscure);
+            $this->paintQuadrant($quadrant);
+            unset($asteroids[$key]);
+        }
+        return $quadrant;
+    }
+
     public function check()
     {
         $asteroids = $this->asteroids;
@@ -139,7 +236,10 @@ class AsteroidField
                         } else {
                             //if not count it and calculate new obscure coords
                             $observableAstroidCount++;
-                            $this->obscure($asteroid, $asteroidInRing);
+                            $shadows = $this->obscure($asteroid, $asteroidInRing);
+                            if (!empty($shadows)) {
+                                $this->obscuredCoords = array_merge($this->obscuredCoords, $shadows);
+                            }
                         }
                     }
                 }
@@ -264,9 +364,7 @@ class AsteroidField
             $shadows = $this->diagonalAlign($base, $asteroid);
         }
 
-        if (!empty($shadows)) {
-            $this->obscuredCoords = array_merge($this->obscuredCoords, $shadows);
-        }
+        return $shadows;
     }
 
     public function isObscured($asteroid)
@@ -348,6 +446,32 @@ class AsteroidField
     public function getMaxObservableAsteroidCount()
     {
         return max($this->observableAsteroidCount);
+    }
+
+    public function getOptimalLocationCoords()
+    {
+        $maxs = array_keys($this->observableAsteroidCount, max($this->observableAsteroidCount));
+        return explode('x', $maxs[0]);
+    }
+
+    public function paintQuadrant($quadrant)
+    {
+        $quadrant = array_map(function ($asteroid) {
+            return [$asteroid[0], $asteroid[1]];
+        }, $quadrant);
+        for ($i = 0; $i <= $this->height - 1; $i++) {
+            for ($j = 0; $j <= $this->width - 1; $j++) {
+
+                if (in_array([$j, $i], $quadrant)) {
+                    print '#';
+                } else {
+                    print '.';
+                }
+            }
+            echo PHP_EOL;
+        }
+        echo "_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-";
+        echo PHP_EOL;
     }
 
     public function paint($ring)

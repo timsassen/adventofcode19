@@ -611,4 +611,78 @@ ASTEROID;
             $asteroid->diagonalAlign([0,0], [4,3])
         );
     }
+
+    public function testVaporize1()
+    {
+        $input = <<<ASTEROID
+.#....#####...#..
+##...##.#####..##
+##...#...#.#####.
+..#.....#...###..
+..#.#.....#....##
+ASTEROID;
+
+        $asteroid = new \AOC\AsteroidField($input);
+        $vaporizedAsteroids = $asteroid->vaporize();
+        $middleHit = $vaporizedAsteroids[7];
+        $this->assertEquals(11, $middleHit[0]);
+        $this->assertEquals(2, $middleHit[1]);
+
+
+        $firstHit = array_shift($vaporizedAsteroids);
+        $this->assertEquals(8, $firstHit[0]);
+        $this->assertEquals(1, $firstHit[1]);
+
+        $lastHit = array_pop($vaporizedAsteroids);
+        $this->assertEquals(14, $lastHit[0]);
+        $this->assertEquals(3, $lastHit[1]);
+    }
+
+
+    public function testVaporize2()
+    {
+        $input = <<<ASTEROID
+.#..##.###...#######
+##.############..##.
+.#.######.########.#
+.###.#######.####.#.
+#####.##.#.##.###.##
+..#####..#.#########
+####################
+#.####....###.#.#.##
+##.#################
+#####.##.###..####..
+..######..##.#######
+####.##.####...##..#
+.#####..#.######.###
+##...#.##########...
+#.##########.#######
+.####.#.###.###.#.##
+....##.##.###..#####
+.#.#.###########.###
+#.#.#.#####.####.###
+###.##.####.##.#..##
+ASTEROID;
+
+        $asteroid = new \AOC\AsteroidField($input);
+        $vaporizedAsteroids = $asteroid->vaporize();
+
+        $this->assertEquals(11, $vaporizedAsteroids[0][0]);
+        $this->assertEquals(12, $vaporizedAsteroids[0][1]);
+
+        $this->assertEquals(12, $vaporizedAsteroids[1][0]);
+        $this->assertEquals(1, $vaporizedAsteroids[1][1]);
+
+        $this->assertEquals(16, $vaporizedAsteroids[49][0]);
+        $this->assertEquals(9, $vaporizedAsteroids[49][1]);
+
+        $this->assertEquals(10, $vaporizedAsteroids[99][0]);
+        $this->assertEquals(16, $vaporizedAsteroids[99][1]);
+
+        $this->assertEquals(8, $vaporizedAsteroids[199][0]);
+        $this->assertEquals(2, $vaporizedAsteroids[199][1]);
+
+        $this->assertEquals(11, $vaporizedAsteroids[298][0]);
+        $this->assertEquals(1, $vaporizedAsteroids[298][1]);
+    }
 }

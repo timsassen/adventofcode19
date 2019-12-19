@@ -2,16 +2,15 @@
 
 include_once __DIR__ . '/vendor/autoload.php';
 
-$asteroids = [
-    [0,0],
-    [1,1],
-    [2,2]
-];
+$input = <<<ASTEROID
+.#....#####...#..
+##...##.#####..##
+##...#...#.#####.
+..#.....#...###..
+..#.#.....#....##
+ASTEROID;
 
-$ring = [
-    [2,2]
-];
-$asteroidsInRing = array_filter($ring, function ($ringElement) use ($asteroids) {
-    return in_array($ringElement, $asteroids);
-});
-var_dump($asteroidsInRing);
+$asteroid = new \AOC\AsteroidField($input);
+//        $asteroid->check();
+//        $optCoords = $asteroid->getOptimalLocationCoords();
+$vaporizedAsteroids = $asteroid->vaporize();

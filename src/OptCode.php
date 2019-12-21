@@ -44,9 +44,20 @@ class OptCode
      */
     public function __construct($code, $input = [], $verbose = false)
     {
+        $this->reset($code, $input, $verbose);
+    }
+
+    /**
+     * @param $code
+     * @param array $input
+     * @param bool $verbose
+     */
+    public function reset($code, $input = [], $verbose = false)
+    {
         $this->code = $code;
         $this->input = $input;
         $this->verbose = $verbose;
+        $this->index = 0;
     }
 
     /**

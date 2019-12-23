@@ -1,6 +1,7 @@
 <?php
 
 namespace AOC;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 /**
  * Class Arcade
@@ -8,6 +9,7 @@ namespace AOC;
  */
 class Arcade
 {
+    protected $code;
     /**
      * @var string
      */
@@ -37,42 +39,48 @@ class Arcade
      */
     private $break;
 
+    private $connection;
+
     /**
      * Arcade constructor.
      * @param $code
      */
-    public function __construct($code)
+    public function __construct($code, $readInput)
     {
-        $this->opCode = new \AOC\InteractiveOptCode($code);
+
+        $this->opCode = new \AOC\InteractiveOptCode($code, [], false, $readInput);
+        $this->connection = RedisAdapter::createConnection("redis://localhost:6379");
         $this->screen = [];
         $this->score = '-';
         $this->frame = 0;
         $this->returnedValues = [];
         $this->gameRunning = true;
         $this->break = 0;
+        $this->code = $code;
     }
 
 
     public function start()
     {
         while ($this->gameRunning) {
-            foreach ($this->opCode->run() as $key => $output) {
+            foreach ($this->opCode->runInteractive() as $key => $output) {
                 $returnedValues[] = $output;
                 if (count($returnedValues) == 3513) {
                     $this->createPixels($returnedValues, $screen, $score);
                     $this->paint($screen, $score);
+                    $this->connection->set('meta', json_encode($this->getMeta($screen, $score, ++$this->frame, $this->opCode->getLastInstruction())));
+                    $this->connection->set('screen', json_encode($screen));
                     $returnedValues = [];
-                    echo "frame: " . ++$this->frame . PHP_EOL;
                 }
             }
             $this->gameRunning = ($this->opCode->getLastInstruction() != 99);
-            $this->opCode->setInput([0]);
 
             if ($this->break++ == 1000) {
                 $this->gameRunning = false;
             }
         }
     }
+
 
     public function pixelLocation($screen, $pixelType)
     {
@@ -165,6 +173,19 @@ class Arcade
             : null;
     }
 
+    public function getMeta($screen, $score, $frame, $lastInstruction)
+    {
+        $padding = 3;
+        return [
+            'yStart' => $this->findLowest($screen, 1) - $padding,
+            'yEnd' => $this->findHighest($screen, 1) + $padding,
+            'xStart' => $this->findLowest($screen, 0) - $padding,
+            'xEnd' => $this->findHighest($screen, 0) + $padding,
+            'lastInstruction' => $lastInstruction,
+            'frame' => $frame,
+            'score' => $score,
+        ];
+    }
 
     /**
      * @param $screen

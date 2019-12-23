@@ -69,6 +69,14 @@ class OptCode
     }
 
     /**
+     * @param array $code
+     */
+    public function setCode(array $code): void
+    {
+        $this->code = $code;
+    }
+
+    /**
      * @return array
      */
     public function getCode()
